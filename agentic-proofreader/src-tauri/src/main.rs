@@ -3,35 +3,9 @@
 
 use docx_rs::{Docx, Paragraph, Run};
 use std::fs::File;
+use std::process::Command;
+use std::thread;
 use tauri::AppHandle;
-
-// --- Specialist Agents (internal functions) ---
-
-fn grammar_checker_agent(text: String) -> String {
-    // Simulate basic grammar check
-    format!("[Grammar Checked] {}", text)
-}
-
-fn refine_agent(text: String, style: String) -> String {
-    // Simulate refining the text based on style
-    format!("[Refined for {} Style] {}", style, text)
-}
-
-
-// --- Tauri Commands (public-facing) ---
-
-#[tauri::command]
-async fn run_proofreading_pipeline(text: String, style: String) -> String {
-    // This is the Master Agent's job.
-    // 1. Run Grammar Checker
-    let checked_text = grammar_checker_agent(text);
-    // 2. Run Refiner
-    let refined_text = refine_agent(checked_text, style);
-
-    // In the future, other agents would be called here.
-
-    refined_text
-}
 
 #[tauri::command]
 async fn export_as_docx(app: AppHandle, text: String) -> Result<(), String> {
@@ -53,11 +27,17 @@ async fn export_as_docx(app: AppHandle, text: String) -> Result<(), String> {
 }
 
 fn main() {
+    // Spawn the Python backend in a separate thread
+    thread::spawn(|| {
+        let _ = Command::new("python")
+            .arg("../src-python/main.py") // Corrected path relative to src-tauri
+            .spawn()
+            .expect("Failed to start Python backend");
+        // We could add more robust error handling and process management here
+    });
+
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            run_proofreading_pipeline,
-            export_as_docx
-        ])
+        .invoke_handler(tauri::generate_handler![export_as_docx])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

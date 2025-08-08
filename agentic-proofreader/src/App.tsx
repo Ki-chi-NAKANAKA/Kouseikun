@@ -13,14 +13,26 @@ function App() {
     if (!inputText) return;
     setIsProofreading(true);
     try {
-      // Call the master agent command with text and style
-      const result = await invoke<string>('run_proofreading_pipeline', {
-        text: inputText,
-        style: selectedStyle,
+      const response = await fetch('http://localhost:8000/proofread', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: inputText,
+          style: selectedStyle,
+        }),
       });
-      setOutputText(result);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setOutputText(data.result);
+
     } catch (error) {
-      console.error("Failed to call run_proofreading_pipeline command:", error);
+      console.error("Failed to communicate with Python backend:", error);
       setOutputText(`Error: ${error}`);
     } finally {
       setIsProofreading(false);
