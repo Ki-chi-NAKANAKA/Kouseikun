@@ -5,13 +5,16 @@ import './App.css';
 function App() {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
+  const [findings, setFindings] = useState<string[]>([]); // New state for findings
   const [isProofreading, setIsProofreading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [selectedStyle, setSelectedStyle] = useState('Formal'); // New state for style
+  const [selectedStyle, setSelectedStyle] = useState('Formal');
 
   const handleProofread = async () => {
     if (!inputText) return;
     setIsProofreading(true);
+    setFindings([]); // Clear previous findings
+    setOutputText(''); // Clear previous output
     try {
       const response = await fetch('http://localhost:8000/proofread', {
         method: 'POST',
@@ -30,6 +33,7 @@ function App() {
 
       const data = await response.json();
       setOutputText(data.result);
+      setFindings(data.findings); // Set new findings
 
     } catch (error) {
       console.error("Failed to communicate with Python backend:", error);
@@ -99,6 +103,18 @@ function App() {
             placeholder="Proofread text will appear here..."
           />
         </div>
+
+        {/* New Findings Section */}
+        {findings.length > 0 && (
+          <div className="findings-container">
+            <h2>Researcher Findings</h2>
+            <ul>
+              {findings.map((finding, index) => (
+                <li key={index}>{finding}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

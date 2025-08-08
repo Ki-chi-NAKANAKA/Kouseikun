@@ -118,3 +118,24 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.findings-container {
+  text-align: left;
+  background-color: #1a1a1a;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.findings-container h2 {
+  margin-top: 0;
+}
+
+.findings-container ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.findings-container li {
+  margin-bottom: 0.5rem;
+}
